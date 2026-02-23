@@ -14,6 +14,14 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
   const title = movie.titleRu || movie.titleOriginal || `ID ${movie.kinopoiskId}`;
   const cast = (movie.cast as Array<{ name?: string; profession?: string }>) ?? [];
 
+  const validRatings = movie.ratings.filter((r) => r.rating !== null);
+  const averageRating: number | null =
+    validRatings.length > 0
+      ? Math.round(
+          (validRatings.reduce((sum, r) => sum + (r.rating ?? 0), 0) / validRatings.length) * 10
+        ) / 10
+      : null;
+
   return (
     <div className="space-y-6">
       <Link
@@ -68,6 +76,7 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
               status: movie.status,
               watchedAt: movie.watchedAt?.toISOString().slice(0, 10) ?? null,
               detailsStatus: movie.detailsStatus ?? undefined,
+              averageRating,
             }}
             ratings={movie.ratings}
             lastFetchedAt={movie.lastFetchedAt?.toISOString() ?? null}

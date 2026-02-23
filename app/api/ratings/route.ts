@@ -41,12 +41,12 @@ export async function POST(request: NextRequest) {
     create: {
       movieId,
       userKey,
-      rating: rating ?? undefined,
-      comment: comment ?? undefined,
+      rating: rating ?? null,
+      comment: comment ?? null,
     },
     update: {
-      rating: rating ?? undefined,
-      comment: comment ?? undefined,
+      rating: rating ?? null,
+      comment: comment ?? null,
     },
   });
 

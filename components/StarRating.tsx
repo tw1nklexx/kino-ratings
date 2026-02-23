@@ -50,7 +50,7 @@ export function StarRating({ value, onChange, readonly = false, size = "md" }: P
         <button
           type="button"
           onClick={() => onChange(null)}
-          className="ml-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-400 underline"
+          className="ml-1 text-xs text-gray-500 hover:text-red-500 mt-1"
         >
           Сбросить
         </button>

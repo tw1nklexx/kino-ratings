@@ -52,5 +52,17 @@ export async function GET(
     include: { ratings: true, telegramPosts: { orderBy: { postedAt: "desc" }, take: 1 } },
   });
   if (!movie) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(movie);
+
+  const validRatings = movie.ratings.filter((r) => r.rating !== null);
+  const averageRating =
+    validRatings.length > 0
+      ? Math.round(
+          (validRatings.reduce((sum, r) => sum + (r.rating ?? 0), 0) / validRatings.length) * 10
+        ) / 10
+      : null;
+
+  return NextResponse.json({
+    ...movie,
+    averageRating,
+  });
 }

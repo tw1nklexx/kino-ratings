@@ -9,6 +9,7 @@ type MovieMeta = {
   status: string;
   watchedAt: string | null;
   detailsStatus?: string;
+  averageRating?: number | null;
 };
 
 type RatingRow = {
@@ -118,6 +119,11 @@ export function MovieDetailClient({
 
   return (
     <div className="mt-4 space-y-4">
+      {movie.averageRating != null && (
+        <div className="text-yellow-500 font-medium text-lg mt-1">
+          ★ {movie.averageRating.toFixed(1)} / 10
+        </div>
+      )}
       <p className="text-xs text-gray-400 dark:text-gray-500">
         {movie.detailsStatus === "pending" && "Загружаю данные… "}
         {movie.detailsStatus === "failed" && "Не удалось загрузить данные. "}
