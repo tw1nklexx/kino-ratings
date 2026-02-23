@@ -118,15 +118,23 @@ async function processPost(
 }
 
 export async function POST(request: NextRequest) {
-  if (!validateSecret(request)) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      {
-        status: 401,
-        headers: { "Cache-Control": "no-store" },
-      }
-    );
-  }
+  const headerSecret = request.headers.get("x-telegram-bot-api-secret-token");
+const envSecret = process.env.TELEGRAM_WEBHOOK_SECRET ?? null;
+
+if (headerSecret !== envSecret) {
+  return NextResponse.json(
+    {
+      error: "Unauthorized",
+      debug: {
+        headerSecret,
+        envSecret,
+        hasEnvSecret: Boolean(envSecret),
+        hasHeaderSecret: Boolean(headerSecret),
+      },
+    },
+    { status: 401, headers: { "Cache-Control": "no-store" } }
+  );
+}
 
   let body: TelegramUpdate;
   try {
