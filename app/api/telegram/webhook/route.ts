@@ -6,10 +6,28 @@ import { fetchMovieDetails, shouldRefreshDetails } from "@/lib/kinopoisk";
 const FETCH_TIMEOUT_MS = 4000;
 
 function validateSecret(request: NextRequest): boolean {
-  const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-  if (!secret) return true;
-  const header = request.headers.get("x-telegram-bot-api-secret-token");
-  return header === secret;
+  const envSecret = process.env.TELEGRAM_WEBHOOK_SECRET ?? null;
+  const headerSecret = request.headers.get("x-telegram-bot-api-secret-token");
+
+  console.log("[tg webhook] header secret:", headerSecret);
+  console.log("[tg webhook] env secret:", envSecret);
+
+  if (!envSecret) {
+    console.error("[tg webhook] TELEGRAM_WEBHOOK_SECRET is NOT set in env");
+    return false;
+  }
+
+  if (!headerSecret) {
+    console.error("[tg webhook] Telegram did NOT send secret header");
+    return false;
+  }
+
+  if (headerSecret !== envSecret) {
+    console.error("[tg webhook] Secret mismatch");
+    return false;
+  }
+
+  return true;
 }
 
 type TelegramUpdate = {
