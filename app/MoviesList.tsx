@@ -22,8 +22,8 @@ type MovieItem = {
   lastFetchedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  ratings: { userKey: string; rating: number | null; comment: string | null }[];
-  telegramPosts: { postedAt: string | null }[];
+  ratings: { userKey: "me" | "her"; rating: number | null; comment: string | null }[];
+  telegramPosts: { postedAt: Date | null }[];
 };
 
 export function MoviesList() {

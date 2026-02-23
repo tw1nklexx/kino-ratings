@@ -58,12 +58,12 @@ async function processPost(
     where: {
       telegramChatId_telegramMessageId: {
         telegramChatId: String(chatId),
-        telegramMessageId: messageId,
+        telegramMessageId: String(messageId),
       },
     },
     create: {
       telegramChatId: String(chatId),
-      telegramMessageId: messageId,
+      telegramMessageId: String(messageId),
       postedAt: dateSeconds ? new Date(dateSeconds * 1000) : new Date(),
       originalText: raw || null,
       movieId: movie.id,

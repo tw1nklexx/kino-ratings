@@ -5,8 +5,26 @@ import { useRouter } from "next/navigation";
 import { StarRating } from "./StarRating";
 import type { Movie, Rating } from "@prisma/client";
 
-type MovieWithRelations = Movie & {
-  ratings: Rating[];
+type RatingLite = {
+  userKey: "me" | "her";
+  rating: number | null;
+  comment: string | null;
+};
+
+type MovieWithRelations = {
+  id: string;
+  kinopoiskId: number;
+  type: string;
+  titleRu: string | null;
+  titleOriginal: string | null;
+  year: number | null;
+  durationMinutes: number | null;
+  description: string | null;
+  posterUrl: string | null;
+  genres: string[];
+  countries: string[];
+  status: string;
+  ratings: RatingLite[];
   telegramPosts: { postedAt: Date | null }[];
 };
 
