@@ -164,7 +164,7 @@ export function MovieDetailClient({
 
       <div className="grid grid-cols-2 gap-6 pt-2 border-t border-gray-200 dark:border-gray-700">
         <div>
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Я</div>
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Оценка Никиты</div>
           <StarRating
             value={meRating?.rating ?? null}
             onChange={(v) => setRating("me", v)}
@@ -184,7 +184,7 @@ export function MovieDetailClient({
           </div>
         </div>
         <div>
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Она</div>
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Оценка Марии</div>
           <StarRating
             value={herRating?.rating ?? null}
             onChange={(v) => setRating("her", v)}

@@ -19,6 +19,7 @@ type MovieItem = {
   ratingKinopoisk: number | null;
   status: string;
   detailsStatus?: string;
+  averageRating: number | null;
   watchedAt: string | null;
   lastFetchedAt: string | null;
   createdAt: string;
@@ -27,12 +28,24 @@ type MovieItem = {
   telegramPosts: { postedAt: Date | null }[];
 };
 
+const SORT_OPTIONS: { value: string; label: string }[] = [
+  { value: "created_desc", label: "По умолчанию" },
+  { value: "title_asc", label: "По алфавиту (А-Я)" },
+  { value: "title_desc", label: "По алфавиту (Я-А)" },
+  { value: "year_desc", label: "По году (новые)" },
+  { value: "year_asc", label: "По году (старые)" },
+  { value: "rating_desc", label: "По рейтингу (высокий)" },
+  { value: "rating_asc", label: "По рейтингу (низкий)" },
+];
+
 export function MoviesList() {
   const [movies, setMovies] = useState<MovieItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<string>("");
   const [unratedBy, setUnratedBy] = useState<string>("");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<string>("created_desc");
+  const [genre, setGenre] = useState<string>("");
 
   useEffect(() => {
     setLoading(true);
@@ -40,13 +53,17 @@ export function MoviesList() {
     if (status) params.set("status", status);
     if (unratedBy) params.set("unratedBy", unratedBy);
     if (search.trim()) params.set("search", search.trim());
+    if (sort) params.set("sort", sort);
+    if (genre) params.set("genre", genre);
     fetch(`/api/movies?${params}`)
       .then((r) => r.json())
       .then((data) => {
         setMovies(Array.isArray(data) ? data : []);
       })
       .finally(() => setLoading(false));
-  }, [status, unratedBy, search]);
+  }, [status, unratedBy, search, sort, genre]);
+
+  const allGenres = Array.from(new Set(movies.flatMap((m) => m.genres))).sort();
 
   return (
     <div className="space-y-4">
@@ -78,6 +95,29 @@ export function MoviesList() {
           <option value="her">Без её оценки</option>
           <option value="both">Без оценок</option>
         </select>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+        >
+          {SORT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <select
+          value={genre}
+          onChange={(e) => setGenre(e.target.value)}
+          className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+        >
+          <option value="">Все жанры</option>
+          {allGenres.map((g) => (
+            <option key={g} value={g}>
+              {g}
+            </option>
+          ))}
+        </select>
       </div>
 
       {loading ? (
@@ -94,6 +134,7 @@ export function MoviesList() {
                 movie={{
                   ...m,
                   detailsStatus: m.detailsStatus,
+                  averageRating: m.averageRating,
                   ratings: m.ratings,
                   telegramPosts: m.telegramPosts.map((p) => ({
                     postedAt: p.postedAt ? new Date(p.postedAt) : null,

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StarRating } from "./StarRating";
-import type { Movie, Rating } from "@prisma/client";
 
 type RatingLite = {
   userKey: "me" | "her";
@@ -25,6 +24,7 @@ type MovieWithRelations = {
   countries: string[];
   status: string;
   detailsStatus?: string; // "pending" | "ready" | "failed"
+  averageRating?: number | null;
   ratings: RatingLite[];
   telegramPosts: { postedAt: Date | null }[];
 };
@@ -72,7 +72,12 @@ export function MovieCard({ movie }: { movie: MovieWithRelations }) {
         </div>
         <div className="p-3 flex-1 min-w-0">
           <h2 className="font-semibold text-gray-900 dark:text-white truncate">{title}</h2>
-          <div className="flex flex-wrap gap-x-2 text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          <div className="flex flex-wrap gap-x-2 gap-y-1 items-center text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            {movie.averageRating != null && (
+              <span className="text-yellow-500 font-medium">
+                ★ {movie.averageRating.toFixed(1)}
+              </span>
+            )}
             {movie.year != null && <span>{movie.year}</span>}
             {movie.durationMinutes != null && (
               <span>{movie.durationMinutes} мин</span>
@@ -114,7 +119,7 @@ export function MovieCard({ movie }: { movie: MovieWithRelations }) {
       <div className="px-3 pb-3 pt-1 border-t border-gray-100 dark:border-gray-800 grid grid-cols-2 gap-4">
         <div>
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">
-            Я
+            Оценка Никиты
           </div>
           <StarRating
             value={meRating?.rating ?? null}
@@ -124,7 +129,7 @@ export function MovieCard({ movie }: { movie: MovieWithRelations }) {
         </div>
         <div>
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">
-            Она
+            Оценка Марии
           </div>
           <StarRating
             value={herRating?.rating ?? null}
