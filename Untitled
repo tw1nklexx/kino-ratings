@@ -1,0 +1,4 @@
+DATABASE_URL="postgresql://neondb_owner:npg_LiEWBjR5oTD8@ep-icy-block-aio5s7vt-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require"
+TELEGRAM_BOT_TOKEN="8794906871:AAEpW9gEoUa1XdJVGT75fsSqUaS-9ET28EI"
+TELEGRAM_WEBHOOK_SECRET="kino_super_secret_2026_telegram_webhook"
+KINOPOISK_API_KEY="J15VZMF-8DCMZE6-J9XH21V-GM97ZG0"

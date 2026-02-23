@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Movie {
+  id              String         @id @default(uuid())
+  kinopoiskId     Int
+  type            String         // "film" | "series"
+  titleRu         String?
+  titleOriginal   String?
+  year            Int?
+  durationMinutes Int?
+  description     String?
+  posterUrl       String?
+  genres          String[]       @default([])
+  countries       String[]       @default([])
+  cast            Json?          // array of { name, profession? }
+  ratingKinopoisk Float?
+  status          String         @default("queued") // "queued" | "watched" | "dropped"
+  watchedAt       DateTime?
+  lastFetchedAt   DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  telegramPosts TelegramPost[]
+  ratings       Rating[]
+
+  @@unique([kinopoiskId, type])
+}
+
+model TelegramPost {
+  id                String   @id @default(uuid())
+  telegramChatId    String
+  telegramMessageId String
+  postedAt          DateTime?
+  originalText      String?
+  movieId           String
+  movie             Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+
+  @@unique([telegramChatId, telegramMessageId])
+}
+
+model Rating {
+  id        String   @id @default(uuid())
+  movieId   String
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  userKey   String   // "me" | "her"
+  rating    Int?     // 1-10
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([movieId, userKey])
+}
