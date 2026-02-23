@@ -22,6 +22,7 @@ model Movie {
   cast            Json?          // array of { name, profession? }
   ratingKinopoisk Float?
   status          String         @default("queued") // "queued" | "watched" | "dropped"
+  detailsStatus   String         @default("pending") // "pending" | "ready" | "failed"
   watchedAt       DateTime?
   lastFetchedAt   DateTime?
   createdAt       DateTime       @default(now())

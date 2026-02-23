@@ -18,6 +18,7 @@ type MovieItem = {
   cast: unknown;
   ratingKinopoisk: number | null;
   status: string;
+  detailsStatus?: string;
   watchedAt: string | null;
   lastFetchedAt: string | null;
   createdAt: string;
@@ -92,6 +93,7 @@ export function MoviesList() {
               <MovieCard
                 movie={{
                   ...m,
+                  detailsStatus: m.detailsStatus,
                   ratings: m.ratings,
                   telegramPosts: m.telegramPosts.map((p) => ({
                     postedAt: p.postedAt ? new Date(p.postedAt) : null,

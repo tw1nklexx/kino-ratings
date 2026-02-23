@@ -67,6 +67,7 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
               id: movie.id,
               status: movie.status,
               watchedAt: movie.watchedAt?.toISOString().slice(0, 10) ?? null,
+              detailsStatus: movie.detailsStatus ?? undefined,
             }}
             ratings={movie.ratings}
             lastFetchedAt={movie.lastFetchedAt?.toISOString() ?? null}

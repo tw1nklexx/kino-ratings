@@ -24,6 +24,7 @@ type MovieWithRelations = {
   genres: string[];
   countries: string[];
   status: string;
+  detailsStatus?: string; // "pending" | "ready" | "failed"
   ratings: RatingLite[];
   telegramPosts: { postedAt: Date | null }[];
 };
@@ -85,17 +86,29 @@ export function MovieCard({ movie }: { movie: MovieWithRelations }) {
               {desc}
             </p>
           )}
-          <span
-            className={`inline-block mt-2 px-2 py-0.5 rounded text-xs ${
-              movie.status === "watched"
-                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                : movie.status === "dropped"
-                  ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                  : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
-            }`}
-          >
-            {STATUS_LABELS[movie.status] ?? movie.status}
-          </span>
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <span
+              className={`inline-block px-2 py-0.5 rounded text-xs ${
+                movie.status === "watched"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                  : movie.status === "dropped"
+                    ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                    : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+              }`}
+            >
+              {STATUS_LABELS[movie.status] ?? movie.status}
+            </span>
+            {movie.detailsStatus === "pending" && (
+              <span className="inline-block px-2 py-0.5 rounded text-xs bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300">
+                Загружаю данные…
+              </span>
+            )}
+            {movie.detailsStatus === "failed" && (
+              <span className="inline-block px-2 py-0.5 rounded text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                Нет данных — нажмите «Обновить»
+              </span>
+            )}
+          </div>
         </div>
       </Link>
       <div className="px-3 pb-3 pt-1 border-t border-gray-100 dark:border-gray-800 grid grid-cols-2 gap-4">

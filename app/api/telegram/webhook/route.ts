@@ -3,31 +3,23 @@ import { prisma } from "@/lib/db";
 import { extractFirstKinopoiskLink } from "@/lib/telegram";
 import { fetchMovieDetails, shouldRefreshDetails } from "@/lib/kinopoisk";
 
-const FETCH_TIMEOUT_MS = 4000;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const KINOPOISK_FETCH_TIMEOUT_MS = 12000;
+const noStore = { "Cache-Control": "no-store" as const };
 
 function validateSecret(request: NextRequest): boolean {
-  const envSecret = process.env.TELEGRAM_WEBHOOK_SECRET ?? null;
+  const envSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
   const headerSecret = request.headers.get("x-telegram-bot-api-secret-token");
 
-  console.log("[tg webhook] header secret:", headerSecret);
-  console.log("[tg webhook] env secret:", envSecret);
-
-  if (!envSecret) {
-    console.error("[tg webhook] TELEGRAM_WEBHOOK_SECRET is NOT set in env");
+  if (!envSecret || envSecret.trim() === "") {
     return false;
   }
-
   if (!headerSecret) {
-    console.error("[tg webhook] Telegram did NOT send secret header");
     return false;
   }
-
-  if (headerSecret !== envSecret) {
-    console.error("[tg webhook] Secret mismatch");
-    return false;
-  }
-
-  return true;
+  return headerSecret === envSecret;
 }
 
 type TelegramUpdate = {
@@ -68,6 +60,7 @@ async function processPost(
     create: {
       kinopoiskId,
       type,
+      detailsStatus: "pending",
     },
     update: {},
   });
@@ -90,10 +83,12 @@ async function processPost(
   });
 
   if (shouldRefreshDetails(movie.lastFetchedAt)) {
-    fetchMovieDetails(movie.kinopoiskId, type, { timeoutMs: FETCH_TIMEOUT_MS })
-      .then((details) => {
-        if (!details) return;
-        return prisma.movie.update({
+    try {
+      const details = await fetchMovieDetails(movie.kinopoiskId, type, {
+        timeoutMs: KINOPOISK_FETCH_TIMEOUT_MS,
+      });
+      if (details) {
+        await prisma.movie.update({
           where: { id: movie.id },
           data: {
             titleRu: details.titleRu,
@@ -107,16 +102,30 @@ async function processPost(
             cast: details.cast as object,
             ratingKinopoisk: details.ratingKinopoisk,
             lastFetchedAt: new Date(),
+            detailsStatus: "ready",
           },
         });
-      })
-      .catch((err) => console.warn("[webhook] background fetch error:", err));
+      } else {
+        await prisma.movie.update({
+          where: { id: movie.id },
+          data: { detailsStatus: "failed" },
+        });
+      }
+    } catch {
+      await prisma.movie.update({
+        where: { id: movie.id },
+        data: { detailsStatus: "failed" },
+      }).catch(() => {});
+    }
   }
 }
 
 export async function POST(request: NextRequest) {
   if (!validateSecret(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: noStore }
+    );
   }
 
   let body: TelegramUpdate;
@@ -130,17 +139,24 @@ export async function POST(request: NextRequest) {
   const message = body.message;
 
   if (channelPost) {
-    const chatId = String(channelPost.chat.id);
-    const messageId = channelPost.message_id;
-    const text = channelPost.text ?? channelPost.caption;
-    await processPost(chatId, messageId, channelPost.date, channelPost.text, channelPost.caption);
+    await processPost(
+      String(channelPost.chat.id),
+      channelPost.message_id,
+      channelPost.date,
+      channelPost.text,
+      channelPost.caption
+    );
   }
 
   if (message) {
-    const chatId = String(message.chat.id);
-    const messageId = message.message_id;
-    await processPost(chatId, messageId, message.date, message.text, message.caption);
+    await processPost(
+      String(message.chat.id),
+      message.message_id,
+      message.date,
+      message.text,
+      message.caption
+    );
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true }, { headers: noStore });
 }

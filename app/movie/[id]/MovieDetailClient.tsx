@@ -8,6 +8,7 @@ type MovieMeta = {
   id: string;
   status: string;
   watchedAt: string | null;
+  detailsStatus?: string;
 };
 
 type RatingRow = {
@@ -118,18 +119,16 @@ export function MovieDetailClient({
   return (
     <div className="mt-4 space-y-4">
       <p className="text-xs text-gray-400 dark:text-gray-500">
-        {lastFetchedAt ? (
-          <>Данные с КиноПоиск: {new Date(lastFetchedAt).toLocaleDateString("ru")}. </>
-        ) : (
-          "Данные с КиноПоиск не загружены. "
-        )}
+        {movie.detailsStatus === "pending" && "Загружаю данные… "}
+        {movie.detailsStatus === "failed" && "Не удалось загрузить данные. "}
+        {lastFetchedAt && <>Данные с КиноПоиск: {new Date(lastFetchedAt).toLocaleDateString("ru")}. </>}
         <button
           type="button"
           onClick={refreshDetails}
           disabled={refreshing}
           className="underline hover:no-underline disabled:opacity-50"
         >
-          {refreshing ? "Обновление…" : lastFetchedAt ? "Обновить данные" : "Загрузить данные"}
+          {refreshing ? "Обновление…" : "Обновить данные"}
         </button>
       </p>
       <div>

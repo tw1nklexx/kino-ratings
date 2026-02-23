@@ -15,6 +15,10 @@ export async function POST(
   });
 
   if (!details) {
+    await prisma.movie.update({
+      where: { id: movieId },
+      data: { detailsStatus: "failed" },
+    });
     return NextResponse.json({ error: "Failed to fetch details" }, { status: 502 });
   }
 
@@ -32,6 +36,7 @@ export async function POST(
       cast: details.cast as object,
       ratingKinopoisk: details.ratingKinopoisk,
       lastFetchedAt: new Date(),
+      detailsStatus: "ready",
     },
   });
 

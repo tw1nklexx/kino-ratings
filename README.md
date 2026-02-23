@@ -22,21 +22,20 @@
    - Нужны права на чтение сообщений (достаточно прав по умолчанию).
 
 3. **Установите вебхук** после деплоя на Vercel:
-   - URL: `https://<ваш-домен-vercel>/api/telegram/webhook`
-   - В запросе укажите `secret_token` — тот же строковый секрет, который вы положите в переменную **TELEGRAM_WEBHOOK_SECRET** в Vercel.
+   - URL вебхука должен быть **ровно один**: `https://kino-ratings.vercel.app/api/telegram/webhook` (или ваш продакшен-домен).
+   - В запросе setWebhook обязательно укажите `secret_token` — строка должна **совпадать** с переменной окружения **TELEGRAM_WEBHOOK_SECRET** в Vercel. Если секрет не совпадает или не задан, запросы будут отклоняться с 401.
 
    Пример (подставьте свои значения):
 
    ```bash
    curl -X POST "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
      -H "Content-Type: application/json" \
-     -d '{"url":"https://ВАШ_ДОМЕН.vercel.app/api/telegram/webhook","secret_token":"ВАШ_TELEGRAM_WEBHOOK_SECRET"}'
+     -d '{"url":"https://kino-ratings.vercel.app/api/telegram/webhook","secret_token":"<TELEGRAM_WEBHOOK_SECRET>"}'
    ```
 
    В настройках проекта Vercel добавьте переменную окружения:
-   - **TELEGRAM_WEBHOOK_SECRET** — та же строка, что и `secret_token` при установке вебхука.
-
-   Запросы к вебхуку без правильного заголовка `X-Telegram-Bot-Api-Secret-Token` будут отклоняться (401).
+   - **TELEGRAM_WEBHOOK_SECRET** — та же строка, что и `secret_token` при вызове setWebhook. Без неё вебхук возвращает 401.
+   - Заголовок запроса от Telegram: `X-Telegram-Bot-Api-Secret-Token` — сравнивается с этой переменной.
 
 4. **История канала**: полный автоматический импорт истории канала через Bot API недоступен. Для старых постов используйте страницу **Импорт** (`/import`): вставьте ссылки на КиноПоиск (по одной на строку) или загрузите .txt файл.
 
@@ -48,7 +47,7 @@
 2. В Vercel (и в локальном `.env`) добавьте переменную:
    - **KINOPOISK_API_KEY** — ваш ключ.
 
-Данные о фильмах кэшируются в БД; обновление — раз в 7 дней или по кнопке «Обновить данные» на странице фильма.
+Данные о фильмах кэшируются в БД. У каждого фильма есть статус загрузки данных (**detailsStatus**): `pending` (загружаем), `ready` (данные есть), `failed` (не удалось загрузить). При поступлении ссылки из Telegram или при импорте данные с КиноПоиск подгружаются синхронно; при сбое можно нажать «Обновить данные» на странице фильма. Обновление кэша — раз в 7 дней или вручную.
 
 ---
 
@@ -108,11 +107,11 @@
    ```bash
    curl -X POST http://localhost:3000/api/telegram/webhook \
      -H "Content-Type: application/json" \
-     -H "X-Telegram-Bot-Api-Secret-Token: ВАШ_SECRET" \
+     -H "X-Telegram-Bot-Api-Secret-Token: <TELEGRAM_WEBHOOK_SECRET>" \
      -d '{"update_id":1,"channel_post":{"message_id":1,"chat":{"id":-1001234567890},"date":1234567890,"text":"https://www.kinopoisk.ru/film/123456/"}}'
    ```
 
-   Ответ `{"ok":true}` и появление фильма в списке означают, что вебхук работает.
+   Ответ `{"ok":true}` и появление фильма в списке означают, что вебхук работает. Без правильного заголовка секрета — 401.
 
 ---
 
